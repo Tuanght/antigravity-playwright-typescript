@@ -1,0 +1,146 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: auth/forgot-password.spec.ts >> OrangeHRM - Forgot Password Module Tests >> OHRM_LOGIN_TC_017 - Gửi yêu cầu đặt lại mật khẩu thành công với Username hợp lệ (Admin)
+- Location: src/tests/auth/forgot-password.spec.ts:42:7
+
+# Error details
+
+```
+TimeoutError: locator.click: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator('button:has-text("Reset Password")')
+    - locator resolved to <button type="submit" data-v-10d463b7="" data-v-76e562c4="" class="oxd-button oxd-button--large oxd-button--secondary orangehrm-forgot-password-button orangehrm-forgot-password-button--reset">…</button>
+  - attempting click action
+    - waiting for element to be visible, enabled and stable
+    - element is visible, enabled and stable
+    - scrolling into view if needed
+    - done scrolling
+    - performing click action
+    - click action done
+    - waiting for scheduled navigations to finish
+
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e6]:
+    - heading "Reset Password" [level=6] [ref=e7]
+    - separator [ref=e8]
+    - paragraph [ref=e9]:
+      - paragraph [ref=e10]: Please enter your username to identify your account to reset your password
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e14]: 
+        - generic [ref=e15]: Username
+      - textbox "Username" [ref=e17]: Admin
+    - separator [ref=e18]
+    - generic [ref=e19]:
+      - button "Cancel" [ref=e20] [cursor=pointer]
+      - button "Reset Password" [active] [ref=e21] [cursor=pointer]
+  - generic [ref=e22]:
+    - paragraph [ref=e23]: OrangeHRM OS 5.8
+    - paragraph [ref=e24]:
+      - text: © 2005 - 2026
+      - link "OrangeHRM, Inc" [ref=e25]:
+        - /url: http://www.orangehrm.com
+      - text: . All rights reserved.
+```
+
+# Test source
+
+```ts
+  1  | import { Page, Locator, test } from '@playwright/test';
+  2  | 
+  3  | export class BasePage {
+  4  |   protected readonly page: Page;
+  5  | 
+  6  |   constructor(page: Page) {
+  7  |     this.page = page;
+  8  |   }
+  9  | 
+  10 |   /**
+  11 |    * Điều hướng trình duyệt đến một URL hoặc path
+  12 |    * @param path Đường dẫn hoặc URL tuyệt đối
+  13 |    */
+  14 |   async navigate(path: string = ''): Promise<void> {
+  15 |     await test.step(`Navigate to path: '${path}'`, async () => {
+  16 |       await this.page.goto(path);
+  17 |     });
+  18 |   }
+  19 | 
+  20 |   /**
+  21 |    * Click vào một phần tử UI
+  22 |    * @param locator Locator của phần tử cần click
+  23 |    * @param elementName Tên mô tả của phần tử (dùng cho log)
+  24 |    */
+  25 |   async click(locator: Locator, elementName: string): Promise<void> {
+  26 |     const locatorStr = locator.toString();
+  27 |     await test.step(`Click on '${elementName}' (locator: "${locatorStr}")`, async () => {
+  28 |       await locator.waitFor({ state: 'visible' });
+> 29 |       await locator.click();
+     |                     ^ TimeoutError: locator.click: Timeout 15000ms exceeded.
+  30 |     });
+  31 |   }
+  32 | 
+  33 |   /**
+  34 |    * Điền text vào ô nhập liệu
+  35 |    * @param locator Locator của ô nhập liệu
+  36 |    * @param text Dữ liệu cần nhập
+  37 |    * @param elementName Tên mô tả của phần tử (dùng cho log)
+  38 |    */
+  39 |   async fill(locator: Locator, text: string, elementName: string): Promise<void> {
+  40 |     const locatorStr = locator.toString();
+  41 |     const isPassword = elementName.toLowerCase().includes('password') || locatorStr.toLowerCase().includes('password');
+  42 |     const displayValue = isPassword ? '******' : text;
+  43 | 
+  44 |     await test.step(`Fill '${elementName}' (locator: "${locatorStr}") with value: "${displayValue}"`, async () => {
+  45 |       await locator.waitFor({ state: 'visible' });
+  46 |       await locator.fill(text);
+  47 |     });
+  48 |   }
+  49 | 
+  50 |   /**
+  51 |    * Lấy text content của một phần tử (Không bọc trong test.step để giảm bớt bước phụ trợ)
+  52 |    */
+  53 |   async getText(locator: Locator): Promise<string> {
+  54 |     await locator.waitFor({ state: 'visible' });
+  55 |     const text = await locator.innerText();
+  56 |     return text.trim();
+  57 |   }
+  58 | 
+  59 |   /**
+  60 |    * Kiểm tra phần tử có hiển thị không (Không bọc trong test.step để giảm bớt bước phụ trợ)
+  61 |    */
+  62 |   async isVisible(locator: Locator): Promise<boolean> {
+  63 |     try {
+  64 |       await locator.waitFor({ state: 'visible', timeout: 5000 });
+  65 |       return await locator.isVisible();
+  66 |     } catch {
+  67 |       return false;
+  68 |     }
+  69 |   }
+  70 | 
+  71 |   /**
+  72 |    * Đợi một khoảng thời gian cụ thể (Không bọc trong test.step để giảm bớt bước phụ trợ)
+  73 |    */
+  74 |   async wait(ms: number): Promise<void> {
+  75 |     await this.page.waitForTimeout(ms);
+  76 |   }
+  77 | 
+  78 |   /**
+  79 |    * Chụp ảnh màn hình
+  80 |    */
+  81 |   async takeScreenshot(name: string): Promise<Buffer> {
+  82 |     return await this.page.screenshot({ path: `test-results/screenshots/${name}-${Date.now()}.png` });
+  83 |   }
+  84 | }
+  85 | 
+```

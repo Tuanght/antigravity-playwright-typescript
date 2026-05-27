@@ -1,0 +1,210 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: auth/login.spec.ts >> OrangeHRM - Login Module Tests >> OHRM_LOGIN_TC_020 - Kiểm tra tính hiển thị của Logo và thông tin phiên bản hệ thống
+- Location: src/tests/auth/login.spec.ts:167:7
+
+# Error details
+
+```
+Error: expect(locator).toBeVisible() failed
+
+Locator:  locator('img[alt="company-branding"]')
+Expected: visible
+Received: hidden
+Timeout:  5000ms
+
+Call log:
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('img[alt="company-branding"]')
+    3 × locator resolved to <img data-v-17f5fb62="" alt="company-branding" src="/web/images/ohrm_branding.png?v=1763650546848"/>
+      - unexpected value "hidden"
+
+```
+
+```yaml
+- img "company-branding"
+- heading "Login" [level=5]
+- paragraph: "Username : Admin"
+- paragraph: "Password : admin123"
+- text:  Username
+- textbox "Username"
+- text:  Password
+- textbox "Password"
+- button "Login"
+- paragraph: Forgot your password?
+- link:
+  - /url: https://www.linkedin.com/company/orangehrm/mycompany/
+- link:
+  - /url: https://www.facebook.com/OrangeHRM/
+- link:
+  - /url: https://twitter.com/orangehrm?lang=en
+- link:
+  - /url: https://www.youtube.com/c/OrangeHRMInc
+- paragraph: OrangeHRM OS 5.8
+- paragraph:
+  - text: © 2005 - 2026
+  - link "OrangeHRM, Inc":
+    - /url: http://www.orangehrm.com
+  - text: . All rights reserved.
+- img "orangehrm-logo"
+```
+
+# Test source
+
+```ts
+  69  |     });
+  70  |   });
+  71  | 
+  72  |   test('OHRM_LOGIN_TC_006 - Đăng nhập thất bại khi nhập Username sai nhưng Password đúng', async ({ loginPage }) => {
+  73  |     await test.step(`Step 1: Attempt login with invalid username and valid password`, async () => {
+  74  |       await loginPage.login('WrongUser', config.testUser.password);
+  75  |     });
+  76  | 
+  77  |     await test.step('Step 2: Verify "Invalid credentials" error message is displayed', async () => {
+  78  |       const alertText = await loginPage.getGeneralErrorMessage();
+  79  |       expect(alertText).toBe('Invalid credentials');
+  80  |     });
+  81  |   });
+  82  | 
+  83  |   test('OHRM_LOGIN_TC_007 - Đăng nhập thất bại khi nhập sai cả Username và Password', async ({ loginPage }) => {
+  84  |     await test.step('Step 1: Attempt login with invalid username and invalid password', async () => {
+  85  |       await loginPage.login('WrongUser', 'wrongpass123');
+  86  |     });
+  87  | 
+  88  |     await test.step('Step 2: Verify "Invalid credentials" error message is displayed', async () => {
+  89  |       const alertText = await loginPage.getGeneralErrorMessage();
+  90  |       expect(alertText).toBe('Invalid credentials');
+  91  |     });
+  92  |   });
+  93  | 
+  94  |   test('OHRM_LOGIN_TC_008 - Xác thực trường Password ẩn ký tự khi người dùng nhập dữ liệu', async ({ loginPage }) => {
+  95  |     await test.step('Step 1: Verify password input has type="password" attribute', async () => {
+  96  |       await expect(loginPage.passwordInput).toHaveAttribute('type', 'password');
+  97  |     });
+  98  |   });
+  99  | 
+  100 |   test('OHRM_LOGIN_TC_009 - Đăng nhập thất bại và bảo mật trước SQL Injection trên trường Username', async ({ loginPage }) => {
+  101 |     const sqlInjectionValue = "admin' OR 1=1--";
+  102 |     
+  103 |     await test.step(`Step 1: Attempt login using SQL Injection payload as username: "${sqlInjectionValue}"`, async () => {
+  104 |       await loginPage.login(sqlInjectionValue, config.testUser.password);
+  105 |     });
+  106 | 
+  107 |     await test.step('Step 2: Verify system handles SQL Injection safely and rejects authentication', async () => {
+  108 |       const alertText = await loginPage.getGeneralErrorMessage();
+  109 |       expect(alertText).toBe('Invalid credentials');
+  110 |     });
+  111 |   });
+  112 | 
+  113 |   test('OHRM_LOGIN_TC_010 - Đăng nhập thất bại và bảo mật trước XSS Injection trên trường Username', async ({ loginPage }) => {
+  114 |     const xssPayload = "<script>alert('XSS')</script>";
+  115 |     
+  116 |     await test.step(`Step 1: Attempt login using XSS payload as username: "${xssPayload}"`, async () => {
+  117 |       await loginPage.login(xssPayload, config.testUser.password);
+  118 |     });
+  119 | 
+  120 |     await test.step('Step 2: Verify XSS payload is sanitized safely and system rejects authentication', async () => {
+  121 |       const alertText = await loginPage.getGeneralErrorMessage();
+  122 |       expect(alertText).toBe('Invalid credentials');
+  123 |     });
+  124 |   });
+  125 | 
+  126 |   test('OHRM_LOGIN_TC_011 - Đăng nhập thất bại khi nhập Username chỉ chứa khoảng trắng', async ({ loginPage }) => {
+  127 |     await test.step('Step 1: Attempt login using username with only whitespaces', async () => {
+  128 |       await loginPage.login('     ', config.testUser.password);
+  129 |     });
+  130 | 
+  131 |     await test.step('Step 2: Verify "Required" validation error is displayed under username field', async () => {
+  132 |       const errorText = await loginPage.getFieldError('username');
+  133 |       expect(errorText).toBe('Required');
+  134 |     });
+  135 |   });
+  136 | 
+  137 |   test('OHRM_LOGIN_TC_012 - Đăng nhập với Username có độ dài cực lớn (256 ký tự)', async ({ loginPage }) => {
+  138 |     const longUsername = TestDataGenerator.getRandomString(256);
+  139 |     
+  140 |     await test.step(`Step 1: Attempt login using extremely long username (256 characters)`, async () => {
+  141 |       await loginPage.login(longUsername, config.testUser.password);
+  142 |     });
+  143 | 
+  144 |     await test.step('Step 2: Verify system UI is stable and login is rejected', async () => {
+  145 |       const alertText = await loginPage.getGeneralErrorMessage();
+  146 |       expect(alertText).toBe('Invalid credentials');
+  147 |     });
+  148 |   });
+  149 | 
+  150 |   test('OHRM_LOGIN_TC_013 - Đăng nhập thất bại khi nhập Username viết thường hoàn toàn (admin)', async ({ loginPage }) => {
+  151 |     await test.step('Step 1: Attempt login with lowercase username "admin"', async () => {
+  152 |       await loginPage.login('admin', config.testUser.password);
+  153 |     });
+  154 | 
+  155 |     await test.step('Step 2: Verify redirection or rejection based on system case-sensitivity rules', async () => {
+  156 |       await loginPage.wait(2000);
+  157 |       const url = loginPage.page.url();
+  158 |       if (url.includes('dashboard')) {
+  159 |         expect(url).toContain('dashboard');
+  160 |       } else {
+  161 |         const alertText = await loginPage.getGeneralErrorMessage();
+  162 |         expect(alertText).toBe('Invalid credentials');
+  163 |       }
+  164 |     });
+  165 |   });
+  166 | 
+  167 |   test('OHRM_LOGIN_TC_020 - Kiểm tra tính hiển thị của Logo và thông tin phiên bản hệ thống', async ({ loginPage }) => {
+  168 |     await test.step('Step 1: Verify company branding logo and version text are visible', async () => {
+> 169 |       await expect(loginPage.companyBrandingLogo).toBeVisible();
+      |                                                   ^ Error: expect(locator).toBeVisible() failed
+  170 |       await expect(loginPage.versionText).toBeVisible();
+  171 |       const versionStr = await loginPage.versionText.innerText();
+  172 |       expect(versionStr).toContain('OrangeHRM OS');
+  173 |     });
+  174 |   });
+  175 | 
+  176 |   test('OHRM_LOGIN_TC_021 - Kiểm tra hiển thị bản quyền và liên kết đến trang chủ OrangeHRM', async ({ loginPage, context }) => {
+  177 |     await test.step('Step 1: Verify copyright text matches and is visible', async () => {
+  178 |       await expect(loginPage.copyrightText).toBeVisible();
+  179 |       const copyrightStr = await loginPage.copyrightText.innerText();
+  180 |       expect(copyrightStr).toContain('OrangeHRM, Inc. All rights reserved.');
+  181 |     });
+  182 | 
+  183 |     await test.step('Step 2: Click on copyright link and verify external site is opened in a new tab', async () => {
+  184 |       const [newPage] = await Promise.all([
+  185 |         context.waitForEvent('page'),
+  186 |         loginPage.orangehrmIncLink.click()
+  187 |       ]);
+  188 |       await newPage.waitForLoadState();
+  189 |       expect(newPage.url()).toContain('orangehrm.com');
+  190 |       await newPage.close();
+  191 |     });
+  192 |   });
+  193 | 
+  194 |   test('OHRM_LOGIN_TC_022 - Kiểm tra các liên kết mạng xã hội hoạt động chính xác', async ({ loginPage, context }) => {
+  195 |     const socialMediaLinks = [
+  196 |       { name: 'LinkedIn', locator: loginPage.linkedInLink, expectedUrl: 'linkedin.com' },
+  197 |       { name: 'Facebook', locator: loginPage.facebookLink, expectedUrl: 'facebook.com' },
+  198 |       { name: 'Twitter / X', locator: loginPage.twitterLink, expectedUrl: 'x.com' },
+  199 |       { name: 'YouTube', locator: loginPage.youtubeLink, expectedUrl: 'youtube.com' }
+  200 |     ];
+  201 | 
+  202 |     for (const social of socialMediaLinks) {
+  203 |       await test.step(`Step: Verify ${social.name} link is visible and redirects to "${social.expectedUrl}" in a new tab`, async () => {
+  204 |         await expect(social.locator).toBeVisible();
+  205 |         const [newPage] = await Promise.all([
+  206 |           context.waitForEvent('page'),
+  207 |           social.locator.click()
+  208 |         ]);
+  209 |         await newPage.waitForLoadState();
+  210 |         expect(newPage.url()).toContain(social.expectedUrl);
+  211 |         await newPage.close();
+  212 |       });
+  213 |     }
+  214 |   });
+  215 | });
+  216 | 
+```
