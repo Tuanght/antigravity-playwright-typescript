@@ -1,0 +1,1 @@
+[{"values":["Playwright"],"name":"Framework"},{"values":["TypeScript"],"name":"Language"},{"values":["https://opensource-demo.orangehrmlive.com"],"name":"BaseURL"},{"values":["CI/GitHub Actions"],"name":"Environment"},{"values":["v20.20.2"],"name":"NodeVersion"}]
