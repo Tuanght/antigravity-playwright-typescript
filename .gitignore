@@ -1,32 +1,65 @@
+# ─────────────────────────────────────────────
 # Dependencies
+# ─────────────────────────────────────────────
 node_modules/
-/dist
+dist/
 
-# Environment variables
+# ─────────────────────────────────────────────
+# Environment / Secrets  (NEVER commit)
+# ─────────────────────────────────────────────
 .env
+.env.local
+.env.*.local
 
-# Playwright test results and reports
+# ─────────────────────────────────────────────
+# Playwright — runtime artifacts
+# ─────────────────────────────────────────────
 /test-results/
 /playwright-report/
 /blob-report/
-/playwright/.cache
+/playwright/.cache/
 
-# Allure reports
+# ─────────────────────────────────────────────
+# Allure — generated reports & raw results
+# ─────────────────────────────────────────────
 /allure-results/
 /allure-report/
 
+# ─────────────────────────────────────────────
 # Logs
+# ─────────────────────────────────────────────
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 *.log
+logs/
 
-# System files
+# ─────────────────────────────────────────────
+# IDE & OS
+# ─────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+.vscode/settings.json
+.vscode/*.code-workspace
+.idea/
+*.swp
+*.swo
 
-requirements/
-testcases/
+# ─────────────────────────────────────────────
+# Project-specific: tool config & artifacts
+# ─────────────────────────────────────────────
 .agent/
+.playwright-mcp/
+antigravity-playwright-typescript/
 antigravity-testing-kit/
 
+# ─────────────────────────────────────────────
+# Documents: not tracked in source control
+# ─────────────────────────────────────────────
+requirements/
+testcases/
+
+# ─────────────────────────────────────────────
+# Keep .vscode/extensions.json (useful for team)
+# ─────────────────────────────────────────────
+!.vscode/extensions.json

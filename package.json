@@ -3,14 +3,35 @@
   "version": "1.0.0",
   "description": "E2E Web UI Automation Framework using Playwright & TypeScript for OrangeHRM",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug",
-    "allure:generate": "npx allure generate allure-results --clean -o allure-report",
-    "allure:open": "npx allure open allure-report",
-    "allure:clear": "npx rimraf allure-results allure-report"
+    "setup:browsers":        "playwright install --with-deps chromium",
+
+    "test":                  "playwright test",
+    "test:headed":           "playwright test --headed",
+    "test:ui":               "playwright test --ui",
+    "test:debug":            "playwright test --debug",
+    "test:chromium":         "playwright test --project=chromium",
+    "test:firefox":          "playwright test --project=firefox",
+    "test:webkit":           "playwright test --project=webkit",
+    "test:admin":            "playwright test src/tests/admin.spec.ts --project=chromium --workers=1",
+    "test:auth":             "playwright test src/tests/auth/ --project=chromium",
+
+    "allure:clean":          "rimraf allure-results allure-report",
+    "allure:generate":       "allure generate allure-results --clean -o allure-report",
+    "allure:open":           "allure open allure-report",
+    "allure:serve":          "allure serve allure-results",
+
+    "test:allure":           "npm run allure:clean && playwright test --project=chromium && npm run allure:generate && npm run allure:open",
+    "test:admin:allure":     "npm run allure:clean && playwright test src/tests/admin.spec.ts --project=chromium --workers=1 && npm run allure:generate && npm run allure:open",
+
+    "report:html":           "playwright show-report playwright-report",
+
+    "typecheck":             "tsc --noEmit",
+    "clean":                 "rimraf dist allure-results allure-report test-results playwright-report blob-report"
   },
   "keywords": [
     "playwright",
@@ -18,14 +39,22 @@
     "automation",
     "testing",
     "e2e",
-    "orangehrm"
+    "orangehrm",
+    "allure",
+    "pom",
+    "page-object-model"
   ],
-  "author": "Antigravity",
+  "author": "Antigravity QA Team",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/<your-org>/orangehrm-playwright-framework.git"
+  },
   "devDependencies": {
     "@playwright/test": "^1.43.0",
     "@types/node": "^20.11.24",
     "allure-commandline": "^2.29.0",
+    "allure-js-commons": "^2.13.0",
     "allure-playwright": "^2.13.0",
     "dotenv": "^16.4.5",
     "rimraf": "^5.0.5",
